@@ -1,0 +1,2 @@
+# Customer-Behavioral-Rhythm-Modeling-for-Proactive-Retention-in-High-Frequency-Retail
+This project models customer purchase rhythm in high-frequency retail by predicting expected purchase cadence and measuring behavioral deviation over time. It introduces a daily customer behavioral scoring framework using Next Purchase Timing (NPT) and Behavioral Deviation Score (BDS) to identify early retention risk and purchase timing breaches.
