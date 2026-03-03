@@ -1,4 +1,4 @@
-# Customer Behavioral Rhythm Modeling for Proactive Retention
+# Customer Behavioral Rhythm Modeling for Proactive Retention in High-Frequency Retail
 
 ## Overview
 This project models customer purchase rhythm in high-frequency retail by predicting expected purchase cadence and measuring behavioral deviation over time.  
