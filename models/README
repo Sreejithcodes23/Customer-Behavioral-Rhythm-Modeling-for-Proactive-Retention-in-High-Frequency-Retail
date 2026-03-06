@@ -1,0 +1,8 @@
+## Model
+
+The trained NPT model (`npt_model.pkl`) is not included in the repository due to file size limitations.
+
+To reproduce the model:
+
+1. Run the training script in `/src/npt.py`
+2. The trained model will be saved to `/models/npt_model.pkl`
