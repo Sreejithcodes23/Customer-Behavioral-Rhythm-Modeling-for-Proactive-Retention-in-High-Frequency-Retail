@@ -1,175 +1,262 @@
 # Customer Behavioral Rhythm Modeling for Proactive Retention in High-Frequency Retail
 
-## Overview
-This project models customer purchase rhythm in high-frequency retail by predicting expected purchase cadence and measuring behavioral deviation over time.  
-It introduces a daily customer behavioral scoring framework using **Predicted Next Purchase Timing (NPT)** and **Behavioral Deviation Score (BDS)** to identify early retention risk and purchase timing breaches.
+---
 
-The project includes a behavioral scoring pipeline and an executive Power BI dashboard for monitoring customer rhythm stability and intervention priority.
+## 🚀 Overview
+
+This project models **customer purchase rhythm** in high-frequency retail by predicting expected purchase cadence and detecting behavioral deviation over time.
+
+It introduces a **production-grade retention intelligence system** powered by:
+
+* 📊 **Batch behavioral scoring pipeline**
+* ⚡ **Real-time prediction API (FastAPI)**
+* 🖥️ **Interactive dashboard (Streamlit + Power BI)**
+* 🔁 **MLflow-based model lifecycle management**
+* 🐳 **Dockerized deployment**
+
+The system enables **early detection of retention risk** and supports proactive customer engagement strategies.
 
 ---
 
-## Business Problem
-Traditional retention approaches rely on static RFM metrics and coarse churn labels. These methods fail to capture dynamic purchase rhythm and early behavioral drift.
+## 💼 Business Problem
 
-This project addresses:
-- When a customer is expected to purchase next  
-- Whether the customer is deviating from their normal rhythm  
-- Which customers have exceeded predicted purchase timing  
-- Which customers require proactive retention action  
+Traditional retention models rely on static RFM metrics and binary churn labels, which fail to capture **dynamic behavioral patterns**.
+
+This project solves:
+
+* When is a customer expected to purchase next?
+* Is the customer deviating from their natural purchase rhythm?
+* Which customers are overdue?
+* Who requires immediate retention intervention?
 
 ---
 
-## Methodology
+## 🧠 Methodology
 
-Customers are scored daily using historical order behavior to compute rhythm-based features:
+Customers are evaluated daily using behavioral features derived from historical transactions.
 
-**Mean Purchase Gap (`mean_gap`)**  
-Average days between purchases for each customer.
+### Key Features
 
-**Days Since Last Purchase (`days_since_last_purchase`)**  
-Elapsed time since the most recent order at each snapshot date.
+**Mean Purchase Gap (`mean_gap`)**
+Average interval between purchases.
 
-**Predicted Next Purchase Timing (`predicted_npt`)**  
-Expected total interval between consecutive purchases for a customer.
+**Days Since Last Purchase (`days_since_last_purchase`)**
+Time elapsed since last transaction.
 
-**Behavioral Deviation Score (`bds`)**  
-Deviation of current purchase gap from expected rhythm.
+**Predicted Next Purchase Timing (`predicted_npt`)**
+ML model prediction of expected purchase interval.
 
-**Risk Bucket (`risk_bucket`)**  
-Behavioral state based on deviation level:
-- early
-- on_time
-- mild_delay
-- high_delay
+**Behavioral Deviation Score (`bds`)**
+Deviation between observed and expected purchase behavior.
 
-**Priority Score (`priority_score`)**  
-Urgency metric combining deviation and purchase timing:
+**Risk Bucket (`risk_bucket`)**
+
+* early
+* on_time
+* mild_delay
+* high_delay
+
+**Priority Score (`priority_score`)**
+
+```
 priority_score = bds × (1 / predicted_npt)
+```
 
-**Overdue Customers**  
-Customers whose observed gap exceeds predicted timing:
+**Overdue Customers**
+
+```
 days_since_last_purchase > predicted_npt
+```
 
 ---
 
-## Data Pipeline
-A daily ETL pipeline computes behavioral scores for each customer and stores them in a snapshot table:
+## ⚙️ System Architecture
 
-Each record represents one customer at one snapshot date.
-
-Features include:
-
-- userid  
-- snapshot_date  
-- days_since_last_purchase  
-- mean_gap  
-- bds  
-- predicted_npt  
-- priority_score  
-- risk_bucket  
-- total_orders  
-- orders_last_30  
-- total_spend  
-- avg_order_value  
-- spend_last_30  
-
----
-
-## Dashboard
-
-An executive Power BI dashboard provides behavioral retention monitoring:
-
-**Key KPIs**
-- Active Customers
-- High Risk Customers
-- Overdue Customers (%)
-- Average BDS
-- Average Predicted NPT
-
-**Behavioral Monitoring**
-- Risk distribution
-- Priority segmentation
-- Behavioral deviation trend
-- Purchase cadence trend
-
-The dashboard enables identification of rhythm instability and intervention priority.
-
-![Executive Overview](dashboard/dashboard_screenshots/executive_overview.png)
+```
+Batch Pipeline (ETL) ───────────────┐
+                                   │
+                                   ▼
+                           MLflow Model Registry
+                                   │
+                 ┌─────────────────┴─────────────────┐
+                 │                                   │
+        Batch Predictions                     Real-Time API
+        (Daily Pipeline)                     (FastAPI)
+                 │                                   │
+                 ▼                                   ▼
+           PostgreSQL DB                    Streamlit App
+                 │
+                 ▼
+          Power BI Dashboard
+```
 
 ---
 
-## Key Insights Enabled
-The framework detects:
+## 🔄 Data Pipeline
 
-- Growth in behavioral deviation
-- Purchase cadence extension
-- Customers exceeding predicted timing
-- High-risk behavioral segments
-- Retention intervention load
+A daily pipeline processes customer transactions and generates behavioral snapshots.
+
+### Pipeline Steps:
+
+1. Data extraction from database
+2. Feature engineering
+3. Model prediction (MLflow production model)
+4. Behavioral scoring (BDS, priority)
+5. Storage in snapshot table
+
+Each record represents a **customer-day snapshot**.
 
 ---
 
-## Repository Structure
+## 🤖 Machine Learning
+
+### Model: Next Purchase Timing (NPT)
+
+* Predicts expected purchase interval
+* Used as baseline for behavioral deviation
+
+### MLflow Integration
+
+* Model versioning and tracking
+* Alias-based deployment (`production`)
+* Decoupled model serving
+
+```python
+model = mlflow.pyfunc.load_model("models:/NPT_Model@production")
+```
+
+### Key Benefits:
+
+* No hardcoded `.pkl` files
+* Seamless model updates
+* Easy rollback to previous versions
+* Reproducibility
+
+---
+
+## ⚡ Real-Time API (FastAPI)
+
+Provides real-time customer predictions:
+
+* Predict NPT
+* Calculate Behavioral Deviation Score
+* Generate customer insights
+
+### Example Endpoint:
+
+```
+POST /customer-insight
+```
+
+---
+
+## 🖥️ Streamlit Application
+
+Interactive UI for:
+
+* Input-based prediction
+* Customer insight visualization
+* Real-time model inference
+
+---
+
+## 📊 Dashboard (Power BI)
+
+### Key KPIs:
+
+* Active Customers
+* High Risk Customers
+* Overdue Customers (%)
+* Average BDS
+* Average Predicted NPT
+
+### Insights:
+
+* Behavioral drift trends
+* Risk segmentation
+* Priority distribution
+* Purchase cadence patterns
+
+---
+
+## 🐳 Docker Deployment
+
+The system is fully containerized:
+
+* FastAPI service
+* Streamlit application
+
+Run locally:
+
+```bash
+docker compose up --build
+```
+
+---
+
+## 🗂️ Repository Structure
+
+```
 customer-behavioral-rhythm-retention/
 │
-├── data/
-│   └── sample_customer_behavior_score.csv
+├── app/                     # FastAPI application
+├── src/                     # Pipeline modules
+├── models/                  # Trained models
+├── config/                  # Database configuration
+├── dashboard/               # Power BI files
+├── docs/                    # Documentation
 │
-├── src/
-│   ├── features.py
-│   ├── bds.py
-│   ├── npt.py
-│   ├── priority.py
-│   ├── snapshot.py
-│   ├── save.py
-│   └── scheduler.py
+├── log_model_mlflow.py      # Model logging script
 │
-├── models/
-│   └── npt_model.pkl
-│
-├── config/
-│   └── db.py
-│
-├── dashboard/
-│   ├── Executive_Overview.pbix
-│   └── dashboard_screenshots/
-│       └── executive_overview.png
-│
-├── docs/
-│   ├── methodology.md
-│   └── feature_definitions.md
-│
-├── main.py
+├── main.py                  # Pipeline entry point
+├── docker-compose.yml
 ├── requirements.txt
-├── .gitignore
 └── README.md
+```
 
 ---
 
-## Technologies
-- Python
-- SQL / PostgreSQL
-- Power BI
-- Pandas
+## 🛠️ Technologies
+
+* Python
+* Pandas / NumPy
+* Scikit-learn
+* FastAPI
+* Streamlit
+* PostgreSQL
+* Power BI
+* MLflow
+* Docker
 
 ---
 
-## Use Cases
-This framework supports:
+## 🎯 Use Cases
 
-- Proactive retention campaigns  
-- Purchase timing prediction  
-- Behavioral drift monitoring  
-- CRM prioritization  
-- Customer lifecycle analytics  
-
----
-
-## Author
-**Sreejith Nair**  
-Data Analytics / Data Science  
+* Proactive customer retention
+* Behavioral drift detection
+* Purchase timing prediction
+* CRM prioritization
+* Customer lifecycle analytics
 
 ---
 
-## Notes
-This project demonstrates behavioral modeling and retention analytics using purchase rhythm rather than static recency-frequency metrics.
+## 💼 Key Highlights
+
+* End-to-end production-grade ML system
+* Batch + real-time inference architecture
+* MLflow-based model lifecycle management
+* Fully containerized deployment
+* Business-focused analytics and insights
+
+---
+
+## 👤 Author
+
+**Sreejith Nair**
+Data Analytics | Data Science 
+
+---
+
+## 📝 Notes
+
+This project demonstrates a shift from static RFM-based analysis to **dynamic behavioral modeling**, enabling more accurate and proactive retention strategies.
